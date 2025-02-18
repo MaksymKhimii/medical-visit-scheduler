@@ -48,7 +48,21 @@ This command will:
 - The application will be available at [http://localhost:8080](http://localhost:8080)
 - Swagger UI will be available at [http://localhost:8080/swagger-ui](http://localhost:8080/swagger-ui)
 
----
+## Example API Endpoints:
+
+- **GET `/api/v1/patients`**: Retrieves a paginated list of patients who have completed visits. The list can be filtered by search term (patient's first name) and/or a list of doctor IDs.
+  - **Query Parameters**:
+    - `page`: The page number for pagination (default is 0).
+    - `size`: The number of records per page (default is 10).
+    - `search`: Optional search term for filtering patients by their first name.
+    - `doctorIds`: Optional list of doctor IDs to filter patients by specific doctors.
+
+- **POST `/api/v1/visits`**: Schedules a new visit for a patient with a doctor.
+  - **Request Body**:
+    - `patientId`: The ID of the patient.
+    - `doctorId`: The ID of the doctor.
+    - `startDateTime`: The start date and time of the visit.
+    - `endDateTime`: The end date and time of the visit.
 
 ## Database Migrations and Dump
 
