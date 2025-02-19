@@ -46,7 +46,7 @@ class PatientControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.length()").value(5))
                 .andExpect(jsonPath("$.data[0].firstName").value("Alice"))
-                .andExpect(jsonPath("$.data[0].lastVisits.length()").value(3));
+                .andExpect(jsonPath("$.data[0].lastVisits.length()").value(1));
     }
 
     @Test
@@ -56,9 +56,9 @@ class PatientControllerIntegrationTest {
                         .param("size", "10")
                         .param("search", "Alice"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.length()").value(1)) // Только Alice
+                .andExpect(jsonPath("$.data.length()").value(1))
                 .andExpect(jsonPath("$.data[0].firstName").value("Alice"))
-                .andExpect(jsonPath("$.data[0].lastVisits.length()").value(3)); // У Alice 3 визита
+                .andExpect(jsonPath("$.data[0].lastVisits.length()").value(1));
     }
 
     @Test
@@ -66,9 +66,9 @@ class PatientControllerIntegrationTest {
         mockMvc.perform(get("/api/v1/patients")
                         .param("page", "0")
                         .param("size", "10")
-                        .param("doctorIds", "1"))
+                        .param("doctorIds", "1,3"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.length()").value(2))
+                .andExpect(jsonPath("$.data.length()").value(3))
                 .andExpect(jsonPath("$.data[0].firstName").value("Alice"))
                 .andExpect(jsonPath("$.data[0].lastVisits.length()").value(1));
     }

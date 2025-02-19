@@ -1,9 +1,7 @@
 package com.khimii.medicalvisitscheduler.service;
 
-import com.khimii.medicalvisitscheduler.model.Doctor;
-import com.khimii.medicalvisitscheduler.model.Patient;
-import com.khimii.medicalvisitscheduler.model.Visit;
 import com.khimii.medicalvisitscheduler.model.dto.PatientListResponse;
+import com.khimii.medicalvisitscheduler.model.dto.PatientVisitResponse;
 import com.khimii.medicalvisitscheduler.repository.PatientRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,12 +33,13 @@ class PatientServiceTest {
     @Test
     void shouldReturnPatientsWithVisits() {
         Pageable pageable = PageRequest.of(0, 10);
-        Doctor doctor = new Doctor(1L, "John", "Doe", "UTC", 5);
-        Patient patient = new Patient(1L, "Alice", "Smith");
-        Visit visit = buildVisit(LocalDateTime.now().minusDays(10), LocalDateTime.now().minusDays(9), doctor, patient);
-        patient.setVisits(List.of(visit));
+        PatientVisitResponse patientVisitResponse = new PatientVisitResponse(
+                1L, "Alice", "Smith",
+                LocalDateTime.now().minusDays(10), LocalDateTime.now().minusDays(9),
+                1L, "John", "Doe", 5L
+        );
 
-        Page<Patient> patientPage = new PageImpl<>(List.of(patient));
+        Page<PatientVisitResponse> patientPage = new PageImpl<>(List.of(patientVisitResponse));
         when(patientRepository.findPatientsWithVisits(null, null, pageable)).thenReturn(patientPage);
 
         Optional<PatientListResponse> response = patientService.getPatients(0, 10, null, null);
@@ -51,6 +50,7 @@ class PatientServiceTest {
             softly.assertThat(response.get().getData().get(0).getFirstName()).isEqualTo("Alice");
             softly.assertThat(response.get().getData().get(0).getLastVisits()).hasSize(1);
             softly.assertThat(response.get().getData().get(0).getLastVisits().get(0).getDoctor().getFirstName()).isEqualTo("John");
+            softly.assertThat(response.get().getData().get(0).getLastVisits().get(0).getDoctor().getTotalPatients()).isEqualTo(5);
         });
     }
 
@@ -67,12 +67,13 @@ class PatientServiceTest {
     @Test
     void shouldFilterPatientsByName() {
         Pageable pageable = PageRequest.of(0, 10);
-        Doctor doctor = new Doctor(1L, "John", "Doe", "UTC", 5);
-        Patient patient = new Patient(1L, "Alice", "Smith");
-        Visit visit = buildVisit(LocalDateTime.now().minusDays(10), LocalDateTime.now().minusDays(9), doctor, patient);
-        patient.setVisits(List.of(visit));
+        PatientVisitResponse patientVisitResponse = new PatientVisitResponse(
+                1L, "Alice", "Smith",
+                LocalDateTime.now().minusDays(10), LocalDateTime.now().minusDays(9),
+                1L, "John", "Doe", 5L
+        );
 
-        Page<Patient> patientPage = new PageImpl<>(List.of(patient));
+        Page<PatientVisitResponse> patientPage = new PageImpl<>(List.of(patientVisitResponse));
         when(patientRepository.findPatientsWithVisits("Alice", null, pageable)).thenReturn(patientPage);
 
         Optional<PatientListResponse> response = patientService.getPatients(0, 10, "Alice", null);
@@ -85,12 +86,13 @@ class PatientServiceTest {
     @Test
     void shouldFilterVisitsByDoctorIds() {
         Pageable pageable = PageRequest.of(0, 10);
-        Doctor doctor = new Doctor(1L, "John", "Doe", "UTC", 5);
-        Patient patient = new Patient(1L, "Alice", "Smith");
-        Visit visit = buildVisit(LocalDateTime.now().minusDays(10), LocalDateTime.now().minusDays(9), doctor, patient);
-        patient.setVisits(List.of(visit));
+        PatientVisitResponse patientVisitResponse = new PatientVisitResponse(
+                1L, "Alice", "Smith",
+                LocalDateTime.now().minusDays(10), LocalDateTime.now().minusDays(9),
+                1L, "John", "Doe", 5L
+        );
 
-        Page<Patient> patientPage = new PageImpl<>(List.of(patient));
+        Page<PatientVisitResponse> patientPage = new PageImpl<>(List.of(patientVisitResponse));
         when(patientRepository.findPatientsWithVisits(null, List.of(1L), pageable)).thenReturn(patientPage);
 
         Optional<PatientListResponse> response = patientService.getPatients(0, 10, null, List.of(1L));
@@ -105,12 +107,14 @@ class PatientServiceTest {
     @Test
     void shouldReturnEmptyWhenNoCompletedVisits() {
         Pageable pageable = PageRequest.of(0, 10);
-        Doctor doctor = new Doctor(1L, "John", "Doe", "UTC", 5);
-        Patient patient = new Patient(1L, "Alice", "Smith");
-        Visit visit = buildVisit(LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2), doctor, patient);
-        patient.setVisits(List.of(visit));
 
-        Page<Patient> patientPage = new PageImpl<>(List.of(patient));
+        PatientVisitResponse futureVisit = new PatientVisitResponse(
+                1L, "Alice", "Smith",
+                LocalDateTime.now().plusDays(1), LocalDateTime.now().plusDays(2),
+                1L, "John", "Doe", 5L
+        );
+
+        Page<PatientVisitResponse> patientPage = new PageImpl<>(List.of(futureVisit));
         when(patientRepository.findPatientsWithVisits(null, null, pageable)).thenReturn(patientPage);
 
         Optional<PatientListResponse> response = patientService.getPatients(0, 10, null, null);
@@ -119,12 +123,4 @@ class PatientServiceTest {
         assertThat(response.get().getData()).isEmpty();
     }
 
-    private Visit buildVisit(LocalDateTime startDateTime, LocalDateTime endDateTime, Doctor doctor, Patient patient) {
-        return Visit.builder()
-                .startDateTime(startDateTime)
-                .endDateTime(endDateTime)
-                .doctor(doctor)
-                .patient(patient)
-                .build();
-    }
 }
